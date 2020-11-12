@@ -1,0 +1,66 @@
+---
+- name: Copy template files to the server
+  copy:
+    src: files/gluster-kubernetes
+    dest: "{{ base_path }}"
+    force: yes
+    owner: "{{ deploy_user }}"
+    group: docker
+
+- block:
+  - name: Set gk-deploy as executable
+    file:
+      path: "{{ config_path }}/gk-deploy"
+      mode: u+x
+
+  - name: Create Heketi config file
+    template:
+      src: heketi.json.template.j2
+      dest: "{{ config_path }}/heketi.json.template"
+      force: yes
+      owner: "{{ deploy_user }}"
+      group: docker
+
+  - name: Create Heketi topology file
+    template:
+      src: topology.json.j2
+      dest: "{{ config_path }}/topology.json"
+      force: yes
+      owner: "{{ deploy_user }}"
+      group: docker
+
+  - name: Deploy Heketi
+    command: ./gk-deploy --ssh-keyfile /home/ubuntu/.ssh/heketi_id_rsa --ssh-user heketi -n default --admin-key "{{ heketi_admin_key }}" --user-key "{{ heketi_user_key }}" -y -v -l /home/ubuntu/heketi.log topology.json
+    args:
+      chdir: "{{ config_path }}"
+  tags:
+    - install
+
+- name: Get Heketi Pod IP
+  shell: kubectl get pods --selector=heketi=pod -o jsonpath='{.items[0].status.podIP}'
+  register: heketi_pod_ip
+
+- name: Create Heketi Storageclass manifest
+  template:
+    src: gluster-storageclass.yml.j2
+    dest: "{{ config_path }}/gluster-storageclass.yml"
+    force: yes
+    owner: "{{ deploy_user }}"
+    group: docker
+
+- name: Create secret
+  shell: kubectl create secret generic heketi-secret --type="kubernetes.io/glusterfs" --from-literal=key='{{ heketi_admin_key }}' --namespace=default
+  register: secret_result
+  changed_when: secret_result.rc == 0
+  failed_when: secret_result.rc != 0 and 'AlreadyExists' not in secret_result.stderr
+
+- name: Delete storage class
+  shell: kubectl delete sc glusterfs-storage
+  register: storage_result
+  changed_when: storage_result == 0
+  failed_when: storage_result.rc != 0 and 'NotFound' not in storage_result.stderr
+
+- name: Deploy storage class
+  shell: kubectl apply -f gluster-storageclass.yml
+  args:
+    chdir: "{{ config_path }}"

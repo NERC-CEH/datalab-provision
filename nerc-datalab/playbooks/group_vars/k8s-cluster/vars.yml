@@ -1,0 +1,36 @@
+kube_master_ip: "{{ hostvars[groups['k8s-master'][0]].openstack.private_v4 }}"
+kube_version: v1.15.5
+kube_join_token: "{{ vault_kube_join_token }}"
+kubeadmin_config: /etc/kubernetes/admin.conf
+
+init_opts: ""     # 1.8.x feature: --feature-gates SelfHosting=true
+kubeadm_opts: ""  # For example: kubeadm_opts: '--apiserver-cert-extra-sans "k8s.domain.com"'
+
+enable_dashboard: yes
+
+heketi_admin_key: "{{ vault_heketi_admin_key }}"
+heketi_user_key: "{{ vault_heketi_user_key }}"
+
+test_ssl_certificate: "{{ vault_test_ssl_certificate }}"
+test_ssl_private_key: "{{ vault_test_ssl_private_key }}"
+
+ssl_certificate: "{{ vault_ssl_certificate }}"
+ssl_private_key: "{{ vault_ssl_private_key }}"
+
+test_authorisation_public_key: "{{ vault_test_authorisation_public_key }}"
+test_authorisation_private_key: "{{ vault_test_authorisation_private_key }}"
+
+authorisation_public_key: "{{ vault_authorisation_public_key }}"
+authorisation_private_key: "{{ vault_authorisation_private_key }}"
+
+authorisation_api_client_secret: "{{ vault_authorisation_api_client_secret }}"
+user_management_api_client_secret: "{{ vault_user_management_api_client_secret }}"
+
+minio_shared_store_access_key: "{{ vault_minio_shared_store_access_key }}"
+minio_shared_store_secret_key: "{{ vault_minio_shared_store_secret_key }}"
+
+test_minio_shared_store_access_key: "{{ vault_test_minio_shared_store_access_key }}"
+test_minio_shared_store_secret_key: "{{ vault_test_minio_shared_store_secret_key }}"
+
+test_mongo_password: "{{ vault_test_mongo_password }}"
+mongo_password: "{{ vault_mongo_password }}"

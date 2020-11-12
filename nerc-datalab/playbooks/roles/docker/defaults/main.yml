@@ -1,0 +1,8 @@
+---
+docker_version: "18.09.7-0ubuntu1~18.04.4"
+docker_compose_version: "1.20.1"
+
+docker_apt_key: "9DC858229FC7DD38854AE2D88D81803C0EBFCD88"
+docker_repository: "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable"
+
+docker_storage_location: "/data/docker"

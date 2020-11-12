@@ -1,0 +1,48 @@
+---
+- name: Prepare all cluster nodes
+  hosts: k8s-cluster
+  become: yes
+  become_method: sudo
+
+  roles:
+    - docker
+    - kubernetes-common
+    - { role: glusterfs, gluster_server: False }
+    - app-armor
+
+- name: Initialise Master Node
+  hosts: k8s-master
+  become: yes
+  become_method: sudo
+
+  roles:
+    - kubernetes/master
+
+- name: Initialise Worker Nodes
+  hosts: k8s-node
+  become: yes
+  become_method: sudo
+
+  roles:
+    - kubernetes/node
+
+- name: Configure Helm
+  hosts: k8s-master
+
+  roles:
+    - helm
+  environment:
+    HELM_HOME: "/home/{{ deploy_user }}/helm"
+
+- name: Base Datalabs kubernetes configuration
+  hosts: k8s-master
+
+  roles:
+    - role: ingress-controller
+      namespace: "{{ test_namespace }}"
+    - role: kubernetes-secrets
+
+  environment:
+    HELM_HOME: "/home/{{ deploy_user }}/helm"
+  tags:
+    - config

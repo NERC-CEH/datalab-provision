@@ -1,0 +1,82 @@
+- hosts: datalabs-k8s-master
+  tasks:
+    - name: Delete key pair
+      local_action: file path=/tmp/keys state=absent
+
+    - name: Create temporary keys directory if it doesn't exist
+      file:
+        path: /tmp/keys
+        state: directory
+        mode: 0755
+      delegate_to: 127.0.0.1
+
+    - name: Create new ssh key pair
+      shell: ssh-keygen -b 2048 -t rsa -f /tmp/keys/heketi_id_rsa -q -N ""
+      delegate_to: 127.0.0.1
+
+- hosts: gluster-node
+  become: yes
+  become_method: sudo
+
+  roles:
+    - glusterfs-firewall
+    - glusterfs
+
+  tasks:
+    - name: Make sure we have a 'wheel' group
+      group:
+        name: wheel
+        state: present
+
+    - name: Allow 'wheel' group to have passwordless sudo
+      lineinfile:
+        dest: /etc/sudoers
+        state: present
+        regexp: '^%wheel'
+        line: '%wheel ALL=(ALL) NOPASSWD: ALL'
+        validate: visudo -cf %s
+
+    - name: Create heketi user
+      user:
+        name: heketi
+        state: present
+        groups: wheel
+
+    - name: Remove authorized_keys files
+      file:
+        path: /home/heketi/.ssh/authorized_keys
+        state: absent
+
+    - name: Copy new public key to authorized keys
+      authorized_key:
+        user: heketi
+        state: present
+        key: "{{ lookup('file', '/tmp/keys/heketi_id_rsa.pub') }}"
+
+- hosts: datalabs-k8s-master
+  become: yes
+  become_method: sudo
+
+  tasks:
+    - name: Copy private key to k8s servers
+      copy:
+        src: /tmp/keys/heketi_id_rsa
+        dest: "/home/{{ deploy_user }}/.ssh/heketi_id_rsa"
+        owner: "{{ deploy_user }}"
+        group: "{{ deploy_user }}"
+        mode: u+rw,g-rwx,o-rwx
+        force: yes
+
+- hosts: datalabs-k8s-master
+  become: yes
+  become_method: sudo
+
+  roles:
+    - role: known-hosts
+      server_group: gluster-node
+
+
+- hosts: datalabs-k8s-master
+  tasks:
+    - name: Delete key pair
+      local_action: file path=/tmp/keys state=absent

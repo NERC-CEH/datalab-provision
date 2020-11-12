@@ -1,0 +1,32 @@
+---
+- name: Install kubectl and jq
+  hosts: datalabs-k8s-master
+  become: yes
+  become_method: sudo
+
+  roles:
+    - rke-kubectl-jq
+  
+- name: Configure Helm
+  hosts: datalabs-k8s-master
+
+  roles:
+    - helm
+  environment:
+    HELM_HOME: "/home/{{ deploy_user }}/helm"
+
+
+- name: Install Ingress Controller and Kubernetes Secrets
+  hosts: datalabs-k8s-master
+
+  roles:
+    - role: kubernetes-secrets
+    - role: ingress-controller
+      namespace: "{{ test_namespace }}"
+    
+
+  environment:
+    HELM_HOME: "/home/{{ deploy_user }}/helm"
+  tags:
+    - config
+

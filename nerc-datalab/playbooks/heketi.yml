@@ -1,0 +1,5 @@
+---
+- hosts: datalabs-k8s-master
+
+  roles:
+    - gluster-kubernetes

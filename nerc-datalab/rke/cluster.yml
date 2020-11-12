@@ -1,0 +1,60 @@
+---
+cluster_name: "datalabs"
+
+kubernetes_version: "v1.18.8-rancher1-1"
+
+bastion_host:
+  address: "192.171.139.87"
+  port: "22"
+  user: "ubuntu"
+  #ssh_key: ""
+  ssh_key_path: "./jasminuser-ssh-keys/id_rsa"
+
+# Currently only nginx ingress provider is supported.
+# To disable ingress controller, set `provider: none`
+# `node_selector` controls ingress placement and is optional
+ingress:
+    provider: none
+    node_selector:
+      app: ingress
+
+ignore_docker_version: false
+
+services:
+  etcd:
+    backup_config:
+      interval_hours: 24
+      retention: 6
+  kubelet:
+    extra_binds:
+      - "/sbin/apparmor_parser:/sbin/apparmor_parser"
+
+ssh_key_path: "./jasminuser-ssh-keys/id_rsa"
+
+nodes:
+  - hostname_override: "datalabs-k8s-master"
+    address: "192.168.3.4"
+    user: "ubuntu"
+    role: [controlplane,etcd]
+    ssh_key_path: "./jasminuser-ssh-keys/id_rsa"
+    port: "22"
+  - hostname_override: "datalabs-k8s-node-1"
+    address: "192.168.3.21"
+    user: "ubuntu"
+    role: [worker]
+    ssh_key_path: "./jasminuser-ssh-keys/id_rsa"
+    port: "22"
+  - hostname_override: "datalabs-k8s-node-2"
+    address: "192.168.3.3"
+    user: "ubuntu"
+    role: [worker]
+    ssh_key_path: "./jasminuser-ssh-keys/id_rsa"
+    port: "22"
+  - hostname_override: "datalabs-k8s-node-3"
+    address: "192.168.3.31"
+    user: "ubuntu"
+    role: [worker]
+    ssh_key_path: "./jasminuser-ssh-keys/id_rsa"
+    port: "22"
+
+

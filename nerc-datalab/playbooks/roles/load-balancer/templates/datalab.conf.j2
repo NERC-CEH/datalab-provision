@@ -1,0 +1,33 @@
+user  nginx;
+worker_processes  1;
+
+error_log  /var/log/nginx/error.log warn;
+pid        /var/run/nginx.pid;
+
+events {
+    worker_connections  1024;
+}
+
+stream {
+  upstream ingress_controller {
+{% for host in groups['k8s-node'] %}
+      server {{ hostvars[host].openstack.private_v4 }}:{{ ingress_service_https_port }};
+{% endfor %}
+  }
+
+  upstream ingress_controller_insecure {
+{% for host in groups['k8s-node'] %}
+      server {{ hostvars[host].openstack.private_v4 }}:{{ ingress_service_http_port }};
+{% endfor %}
+  }
+
+  server {
+      listen 80;
+      proxy_pass ingress_controller_insecure;
+  }
+
+  server {
+      listen 443;
+      proxy_pass ingress_controller;
+  }
+}

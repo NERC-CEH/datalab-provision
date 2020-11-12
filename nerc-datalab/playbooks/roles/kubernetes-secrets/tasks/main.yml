@@ -1,0 +1,85 @@
+---
+- name: Deploy Test TLS Secrets
+  shell: kubectl create secret generic tls-secret --from-literal=tls.crt="{{ test_ssl_certificate }}" --from-literal=tls.key="{{ test_ssl_private_key }}" --type=kubernetes.io/tls -n test
+  register: test_tls_secret_result
+  changed_when: test_tls_secret_result.rc == 0
+  failed_when: test_tls_secret_result.rc != 0 and 'AlreadyExists' not in test_tls_secret_result.stderr
+
+- name: Deploy Prod TLS Secrets
+  shell: kubectl create secret generic tls-secret --from-literal=tls.crt="{{ ssl_certificate }}" --from-literal=tls.key="{{ ssl_private_key }}" --type=kubernetes.io/tls -n prod
+  register: prod_tls_secret_result
+  changed_when: prod_tls_secret_result.rc == 0
+  failed_when: prod_tls_secret_result.rc != 0 and 'AlreadyExists' not in prod_tls_secret_result.stderr
+
+- name: Deploy Default TLS Secret to Kube System Namespace
+  shell: kubectl create secret generic tls-secret --from-literal=tls.crt="{{ test_ssl_certificate }}" --from-literal=tls.key="{{ test_ssl_private_key }}" --type=kubernetes.io/tls -n kube-system
+  register: default_tls_secret_result
+  changed_when: default_tls_secret_result.rc == 0
+  failed_when: default_tls_secret_result.rc != 0 and 'AlreadyExists' not in default_tls_secret_result.stderr
+
+- name: Deploy Test Auth Signing Keys
+  shell: kubectl create secret generic auth-signing-key --from-literal=public="{{ test_authorisation_public_key }}" --from-literal=private="{{ test_authorisation_private_key }}" -n test
+  register: test_auth_secret_result
+  changed_when: test_auth_secret_result.rc == 0
+  failed_when: test_auth_secret_result.rc != 0 and 'AlreadyExists' not in test_auth_secret_result.stderr
+
+- name: Deploy Prod Auth Signing Keys
+  shell: kubectl create secret generic auth-signing-key --from-literal=public="{{ authorisation_public_key }}" --from-literal=private="{{ authorisation_private_key }}" -n prod
+  register: prod_auth_secret_result
+  changed_when: prod_auth_secret_result.rc == 0
+  failed_when: prod_auth_secret_result.rc != 0 and 'AlreadyExists' not in prod_auth_secret_result.stderr
+
+- name: Deploy Test Authorisation API client secret
+  shell: kubectl create secret generic authorisation-api-client-secret --from-literal=secret="{{ authorisation_api_client_secret }}" -n test
+  register: test_authorisation_secret_result
+  changed_when: test_authorisation_secret_result.rc == 0
+  failed_when: test_authorisation_secret_result.rc != 0 and 'AlreadyExists' not in test_authorisation_secret_result.stderr
+
+- name: Deploy Prod Authorisation API client secret
+  shell: kubectl create secret generic authorisation-api-client-secret --from-literal=secret="{{ authorisation_api_client_secret }}" -n prod
+  register: prod_authorisation_secret_result
+  changed_when: prod_authorisation_secret_result.rc == 0
+  failed_when: prod_authorisation_secret_result.rc != 0 and 'AlreadyExists' not in prod_authorisation_secret_result.stderr
+
+- name: Deploy Test User Management API client secret
+  shell: kubectl create secret generic user-management-api-client-secret --from-literal=secret="{{ user_management_api_client_secret }}" -n test
+  register: test_user_management_api_client_secret
+  changed_when: test_user_management_api_client_secret.rc == 0
+  failed_when: test_user_management_api_client_secret.rc != 0 and 'AlreadyExists' not in test_user_management_api_client_secret.stderr
+
+- name: Deploy Prod User Management API client secret
+  shell: kubectl create secret generic user-management-api-client-secret --from-literal=secret="{{ user_management_api_client_secret }}" -n prod
+  register: user_management_api_client_secret
+  changed_when: user_management_api_client_secret.rc == 0
+  failed_when: user_management_api_client_secret.rc != 0 and 'AlreadyExists' not in user_management_api_client_secret.stderr
+
+- name: Deploy Test User Minio shared store secrets
+  shell: kubectl create secret generic minio-shared-store-secret --from-literal=accessKey="{{ test_minio_shared_store_access_key }}" --from-literal=secretKey="{{ test_minio_shared_store_secret_key }}" -n test
+  register: test_minio_shared_store_secret
+  changed_when: test_minio_shared_store_secret.rc == 0
+  failed_when: test_minio_shared_store_secret.rc != 0 and 'AlreadyExists' not in test_minio_shared_store_secret.stderr
+
+- name: Deploy Prod User Minio shared store secrets
+  shell: kubectl create secret generic minio-shared-store-secret --from-literal=accessKey="{{ minio_shared_store_access_key }}" --from-literal=secretKey="{{ minio_shared_store_secret_key }}" -n prod
+  register: minio_shared_store_secret
+  changed_when: minio_shared_store_secret.rc == 0
+  failed_when: minio_shared_store_secret.rc != 0 and 'AlreadyExists' not in minio_shared_store_secret.stderr
+
+- name: Deploy Test Mongo password secret
+  shell: kubectl create secret generic mongo-password-secret --from-literal=secret="{{ test_mongo_password }}" -n test
+  register: test_mongo_password_secret
+  changed_when: test_mongo_password_secret.rc == 0
+  failed_when: test_mongo_password_secret.rc != 0 and 'AlreadyExists' not in test_mongo_password_secret.stderr
+
+- name: Deploy Prod Mongo password secret
+  shell: kubectl create secret generic mongo-password-secret --from-literal=secret="{{ mongo_password }}" -n prod
+  register: mongo_password_secret
+  changed_when: mongo_password_secret.rc == 0
+  failed_when: mongo_password_secret.rc != 0 and 'AlreadyExists' not in mongo_password_secret.stderr
+
+#- name: CEH Deploy Default TLS Secret to Kube System Namespace
+#  shell: kubectl create secret generic tls-secret --from-literal=tls.crt="{{ ssl_certificate }}" --from-literal=tls.key="{{ ssl_private_key }}" --type=kubernetes.io/tls -n kube-system
+#  register: default_tls_secret_result
+#  changed_when: default_tls_secret_result.rc == 0
+#  failed_when: default_tls_secret_result.rc != 0 and 'AlreadyExists' not in default_tls_secret_result.stderr
+

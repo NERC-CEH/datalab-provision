@@ -1,0 +1,38 @@
+---
+- name: Add Signing key
+  apt_key:
+    url: "https://download.gluster.org/pub/gluster/glusterfs/{{ glusterfs_ppa_version }}/rsa.pub"
+    state: present
+
+- name: Add PPA for GlusterFS
+  apt_repository:
+    repo: 'ppa:gluster/glusterfs-{{ glusterfs_ppa_version }}'
+    state: present
+    update_cache: yes
+  register: glusterfs_ppa_added
+
+- name: Install dependencies
+  apt:
+    name: software-properties-common
+    state: present
+
+- name: Install Gluster dependency
+  apt:
+    name: thin-provisioning-tools
+    state: present
+
+- name: Ensure GlusterFS client is installed
+  apt:
+    name: glusterfs-client
+    state: present
+
+- name: Ensure GlusterFS server is installed if required
+  apt:
+    name: glusterfs-server
+    state: present
+
+- name: Ensure GlusterFS is started and enabled at boot
+  systemd:
+    name: glusterd
+    state: started
+    enabled: yes

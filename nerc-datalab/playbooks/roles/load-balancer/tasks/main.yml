@@ -1,0 +1,30 @@
+---
+- apt_key:
+    url: "https://nginx.org/keys/nginx_signing.key"
+    id: "573BFD6B3D8FBC641079A6ABABF5BD827BD9BF62"
+    state: present
+
+- apt_repository:
+    repo: deb http://nginx.org/packages/ubuntu/ xenial nginx
+    state: present
+
+- name: Update repositories cache and install nginx
+  apt:
+    name: nginx
+    update_cache: yes
+
+- name: Create datalabs Nginx Loadbalancer configuration file from template
+  template:
+    src: datalab.conf.j2
+    dest: /etc/nginx/nginx.conf
+    force: yes
+  notify:
+    - restart nginx
+
+- name: Open Firewall ports
+  ufw:
+    rule: allow
+    port: "{{ item }}"
+    from_ip: any
+    proto: tcp
+  with_items: "{{ proxy_ports }}"

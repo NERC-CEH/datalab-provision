@@ -1,0 +1,18 @@
+---
+- name: Configure Tools
+  hosts: k8s-master
+
+  roles:
+    - role: prometheus
+    - role: efk-logging
+    - role: datalabs-base
+      datalab: "{{ test_namespace }}"
+    - role: datalabs-base
+      datalab: "{{ prod_namespace }}"
+    - role: vault-secrets
+      datalab: "{{ test_namespace }}"
+    - role: vault-secrets
+      datalab: "{{ prod_namespace }}"
+
+  environment:
+    HELM_HOME: "/home/ubuntu/helm"

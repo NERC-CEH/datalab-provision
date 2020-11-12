@@ -1,0 +1,50 @@
+---
+- name: Remove current swaps from fstab
+  lineinfile:
+    dest: /etc/fstab
+    regexp: '^/[\S]+\s+none\s+swap '
+    state: absent
+
+- name: Disable swap
+  command: swapoff --all
+
+- name: Install ca-certificates
+  apt:
+    name: ca-certificates
+    state: present
+
+- name: Install apt-transport-https
+  apt:
+    name: apt-transport-https
+    state: present
+
+- name: add kubernetes key
+  become: yes
+  apt_key:
+    id: '{{ kubernetes_apt_key_id }}'
+    url: 'https://packages.cloud.google.com/apt/doc/apt-key.gpg'
+    state: present
+
+- name: add kubernetes repo
+  become: yes
+  apt_repository:
+    repo: 'deb http://apt.kubernetes.io/ kubernetes-xenial main'
+    state: present
+
+- name: Install Kubernetes Components
+  apt:
+    update_cache: yes
+    name: "{{ kubernetes_packages }}"
+
+- name: Open all ports for access fom workers
+  ufw:
+    rule: allow
+    from_ip: "{{ hostvars[item].openstack.private_v4 }}"
+    proto: any
+  with_items: "{{ groups['k8s-cluster'] }}"
+
+- name: Open all ports for access fom weave network
+  ufw:
+    rule: allow
+    from_ip: 10.0.0.0/8
+    proto: any
