@@ -216,7 +216,7 @@ ansible-playbook rke-datalabs.yml
 This playbook combines playbooks that do the following:
 
 * Configure Load Balancers
-* Configure Prepare RKE Kubernetes Cluster
+* Prepare RKE Kubernetes Cluster
 * Install RKE Kubernetes Cluster
 * Configure Gluster Servers
 * Configure RKE Kubernetes Cluster
